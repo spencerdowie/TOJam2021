@@ -19,9 +19,10 @@ public class Swappable : MonoBehaviour, IPointerClickHandler
     public void Setup()
     {
         pos = Board.Instance.Grid.WorldToCell(transform.position);
-        colour = Random.Range(0, Board.Instance.colors.Length);
+        colour = transform.GetSiblingIndex() % 4;//Random.Range(0, Board.Instance.colors.Length);
         GetComponent<Image>().color = Board.Instance.colors[colour];
         highlight = transform.GetChild(0).gameObject;
+        name = $"Tile[{pos.x},{pos.y}]";
     }
 
     public void OnPointerClick(PointerEventData e)
@@ -49,6 +50,7 @@ public class Swappable : MonoBehaviour, IPointerClickHandler
         }
         transform.position = destination;
         pos = Board.Instance.Grid.WorldToCell(transform.position);
+        name = $"Tile[{pos.x},{pos.y}]";
     }
 
     public IEnumerator Clear(float t)

@@ -5,18 +5,12 @@ using UnityEngine;
 
 public class Board : MonoBehaviour
 {
-    private struct SpawnInfo
-    {
-        public int numToSpawn;
-        public int startHeight;
-    }
     private static Board instance;
     [SerializeField] private Swappable selected;
     private Grid grid;
     public Color[] colors = new Color[4];
     [SerializeField] private Vector2Int max = Vector2Int.zero;
     private Swappable[,] tiles;
-    private SpawnInfo[] spawners;
     [SerializeField] private GameObject tilePrefab;
 
     public static Board Instance { get => instance; }
@@ -61,12 +55,6 @@ public class Board : MonoBehaviour
             Swappable tile = transform.GetChild(i).GetComponent<Swappable>();
             tiles[tile.pos.x, tile.pos.y] = tile;
         }
-
-        spawners = new SpawnInfo[Max.x + 1];
-        for (int i = 0; i < spawners.Length; ++i)
-        {
-            spawners[i] = new SpawnInfo() { numToSpawn = 0, startHeight = -1 };
-        }
     }
 
     public bool SelectSwappable(Swappable swappable)
@@ -101,7 +89,7 @@ public class Board : MonoBehaviour
     public void CheckAdjacent(Vector3Int[] toCheck)
     {
         List<Coroutine> coroutines = new List<Coroutine>();
-        List<Vector3Int[]> tileGroups = new List<Vector3Int[]>();
+        List<Vector3Int> tileGroups = new List<Vector3Int>();
 
         for (int i = 0; i < toCheck.Length; ++i)
         {
@@ -109,40 +97,42 @@ public class Board : MonoBehaviour
             List<Swappable> vMatches = new List<Swappable>();
             List<Vector3Int> hTiles = new List<Vector3Int>();
             List<Vector3Int> vTiles = new List<Vector3Int>();
+
+            Swappable tile = tiles[toCheck[i].x, toCheck[i].y];
             //Check Left
-            if (toCheck[i].x > 0 && tiles[toCheck[i].x, toCheck[i].y].colour == tiles[toCheck[i].x - 1, toCheck[i].y].colour)
+            if (toCheck[i].x > 0 && tile.colour == tiles[toCheck[i].x - 1, toCheck[i].y].colour)
             {
-                if (toCheck[i].x > 1 && tiles[toCheck[i].x, toCheck[i].y].colour == tiles[toCheck[i].x - 2, toCheck[i].y].colour)
+                if (toCheck[i].x > 1 && tile.colour == tiles[toCheck[i].x - 2, toCheck[i].y].colour)
                 {
                     hMatches.Add(tiles[toCheck[i].x - 2, toCheck[i].y]);
                 }
                 hMatches.Add(tiles[toCheck[i].x - 1, toCheck[i].y]);
             }
-            hMatches.Add(tiles[toCheck[i].x, toCheck[i].y]);
+            hMatches.Add(tile);
             //Check Right
-            if (toCheck[i].x < Max.x && tiles[toCheck[i].x, toCheck[i].y].colour == tiles[toCheck[i].x + 1, toCheck[i].y].colour)
+            if (toCheck[i].x < Max.x && tile.colour == tiles[toCheck[i].x + 1, toCheck[i].y].colour)
             {
                 hMatches.Add(tiles[toCheck[i].x + 1, toCheck[i].y]);
-                if (toCheck[i].x < Max.x - 1 && tiles[toCheck[i].x, toCheck[i].y].colour == tiles[toCheck[i].x + 2, toCheck[i].y].colour)
+                if (toCheck[i].x < Max.x - 1 && tile.colour == tiles[toCheck[i].x + 2, toCheck[i].y].colour)
                 {
                     hMatches.Add(tiles[toCheck[i].x + 2, toCheck[i].y]);
                 }
             }
             //Check Down
-            if (toCheck[i].y > 0 && tiles[toCheck[i].x, toCheck[i].y].colour == tiles[toCheck[i].x, toCheck[i].y - 1].colour)
+            if (toCheck[i].y > 0 && tile.colour == tiles[toCheck[i].x, toCheck[i].y - 1].colour)
             {
-                if (toCheck[i].y > 1 && tiles[toCheck[i].x, toCheck[i].y].colour == tiles[toCheck[i].x, toCheck[i].y - 2].colour)
+                if (toCheck[i].y > 1 && tile.colour == tiles[toCheck[i].x, toCheck[i].y - 2].colour)
                 {
                     vMatches.Add(tiles[toCheck[i].x, toCheck[i].y - 2]);
                 }
                 vMatches.Add(tiles[toCheck[i].x, toCheck[i].y - 1]);
             }
-            vMatches.Add(tiles[toCheck[i].x, toCheck[i].y]);
+            vMatches.Add(tile);
             //Check Up
-            if (toCheck[i].y < Max.y && tiles[toCheck[i].x, toCheck[i].y].colour == tiles[toCheck[i].x, toCheck[i].y + 1].colour)
+            if (toCheck[i].y < Max.y && tile.colour == tiles[toCheck[i].x, toCheck[i].y + 1].colour)
             {
                 vMatches.Add(tiles[toCheck[i].x, toCheck[i].y + 1]);
-                if (toCheck[i].y < Max.y - 1 && tiles[toCheck[i].x, toCheck[i].y].colour == tiles[toCheck[i].x, toCheck[i].y + 2].colour)
+                if (toCheck[i].y < Max.y - 1 && tile.colour == tiles[toCheck[i].x, toCheck[i].y + 2].colour)
                 {
                     vMatches.Add(tiles[toCheck[i].x, toCheck[i].y + 2]);
                 }
@@ -155,11 +145,14 @@ public class Board : MonoBehaviour
             {
                 for (int j = 0; j < hMatches.Count; ++j)
                 {
+                    if (tileGroups.Contains(hMatches[j].pos))
+                        continue;
+
                     hMatches[j].HighLight();
                     coroutines.Add(hMatches[j].Clear());
                     hTiles.Add(hMatches[j].pos);
                 }
-                tileGroups.Add(hTiles.ToArray());
+                tileGroups.AddRange(hTiles.ToArray());
             }
             if (vMatches.Count < 3)
             {
@@ -169,17 +162,22 @@ public class Board : MonoBehaviour
             {
                 for (int j = 0; j < vMatches.Count; ++j)
                 {
-                    if (hTiles.Contains(vMatches[j].pos))
+                    if (tileGroups.Contains(vMatches[j].pos))
                         continue;
 
                     vMatches[j].HighLight();
                     coroutines.Add(vMatches[j].Clear());
                     vTiles.Add(vMatches[j].pos);
                 }
-                tileGroups.Add(vTiles.ToArray());
+                tileGroups.AddRange(vTiles.ToArray());
             }
         }
-        StartCoroutine(WaitForClear(tileGroups.ToArray(), coroutines.ToArray()));
+
+        for(int i = 0; i < tileGroups.Count; ++i)
+        {
+            tiles[tileGroups[i].x, tileGroups[i].y] = null;
+        }
+        StartCoroutine(WaitForClear(coroutines.ToArray()));
     }
 
     public void AlignChildrenToGrid()
@@ -211,63 +209,57 @@ public class Board : MonoBehaviour
         CheckAdjacent(tiles);
     }
 
-    private IEnumerator WaitForClear(Vector3Int[][] tileGroups, Coroutine[] coroutines)
+    private IEnumerator WaitForClear(Coroutine[] coroutines)
     {
         for (int i = 0; i < coroutines.Length; ++i)
         {
             yield return coroutines[i];
         }
 
-        for (int i = 0; i < tileGroups.Length; ++i)
-        {
-            for (int j = 0; j < tileGroups[i].Length; ++j)
-            {
-                Vector2Int pos = (Vector2Int)tileGroups[i][j];
-                if (spawners[pos.x].numToSpawn == 0 || spawners[pos.x].startHeight > pos.y)
-                {
-                    spawners[pos.x].startHeight = pos.y;
-                }
-                ++spawners[pos.x].numToSpawn;
-            }
-        }
-
-        SpawnFromQueues();
+        SpawnNewTiles();
     }
 
-    private void SpawnFromQueues()
+    private void SpawnNewTiles()
     {
-        List<Vector3Int> movedTiles = new List<Vector3Int>();
         List<Coroutine> moveCoroutines = new List<Coroutine>();
+        List<Vector3Int> movedTiles = new List<Vector3Int>();
 
-        for (int x = 0; x < spawners.Length; ++x)
+        for (int x = 0; x <= Max.x; ++x)
         {
-            if (spawners[x].numToSpawn <= 0)
-                continue;
-
-            for (int y = spawners[x].startHeight; y <= Max.y; ++y)
+            int spawnHeight = Max.y + 1;
+            for (int y = 0; y <= Max.y; ++y)
             {
-                movedTiles.Add(new Vector3Int(x, y, 0));
-
-                int yOffset = y + spawners[x].numToSpawn;
-                if (yOffset <= Max.y)
+                if (tiles[x, y] == null)
                 {
-                    moveCoroutines.Add(StartCoroutine(tiles[x, yOffset].MoveToCoroutine(new Vector3Int(x, y, 0))));
-                    tiles[x, y] = tiles[x, yOffset];
-                }
-                else
-                {
-                    Swappable newTile = Instantiate(tilePrefab, transform).GetComponent<Swappable>();
-                    newTile.transform.position = Grid.GetCellCenterWorld(new Vector3Int(x, yOffset, 0));
-                    newTile.Setup();
-                    moveCoroutines.Add(StartCoroutine(newTile.MoveToCoroutine(new Vector3Int(x, y, 0))));
-                    tiles[x, y] = newTile;
+                    for (int i = y; i <= Max.y; ++i)
+                    {
+                        if (tiles[x, i] != null)
+                        {
+                            moveCoroutines.Add(StartCoroutine(tiles[x, i].MoveToCoroutine(new Vector3Int(x, y, 0))));
+                            tiles[x, y] = tiles[x, i];
+                            tiles[x, i] = null;
+                            break;
+                        }
+                    }
+                    if (tiles[x, y] == null)//If there where no tiles on the board the above for loop will end without assigning a tile to x,y
+                    {
+                        moveCoroutines.Add(SpawnAndMove(x, y, spawnHeight++));
+                    }
+                    movedTiles.Add(new Vector3Int(x, y, 0));
                 }
             }
-            spawners[x].numToSpawn = 0;
-            spawners[x].startHeight = -1;
         }
 
-        //if(movedTiles.Count > 0)
-        //    StartCoroutine(WaitForMove(movedTiles.ToArray(), moveCoroutines.ToArray()));
+        if(movedTiles.Count > 0)
+            StartCoroutine(WaitForMove(movedTiles.ToArray(), moveCoroutines.ToArray()));
+    }
+
+    private Coroutine SpawnAndMove(int x, int y, int spawnHeight)
+    {
+        Swappable newTile = Instantiate(tilePrefab, transform).GetComponent<Swappable>();
+        newTile.transform.position = Grid.GetCellCenterWorld(new Vector3Int(x, spawnHeight, 0));
+        newTile.Setup();
+        tiles[x, y] = newTile;
+        return StartCoroutine(newTile.MoveToCoroutine(new Vector3Int(x, y, 0)));
     }
 }
