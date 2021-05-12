@@ -4,17 +4,12 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 
-public class Swappable : MonoBehaviour, IPointerClickHandler
+public class Tile : MonoBehaviour, IPointerClickHandler
 {
     public Vector3Int pos = new Vector3Int();
     public int colour;
     private GameObject highlight;
     [SerializeField] private AnimationCurve swapCurve;
-
-    private void Start()
-    {
-        Setup();
-    }
 
     public void Setup()
     {

@@ -6,11 +6,11 @@ using UnityEngine;
 public class Board : MonoBehaviour
 {
     private static Board instance;
-    [SerializeField] private Swappable selected;
+    [SerializeField] private Tile selected;
     private Grid grid;
     public Color[] colors = new Color[4];
     [SerializeField] private Vector2Int max = Vector2Int.zero;
-    private Swappable[,] tiles;
+    private Tile[,] tiles;
     [SerializeField] private GameObject tilePrefab;
 
     public static Board Instance { get => instance; }
@@ -49,15 +49,22 @@ public class Board : MonoBehaviour
 
     private void Start()
     {
-        tiles = new Swappable[Max.x + 1, Max.y + 1];
+        tiles = new Tile[Max.x + 1, Max.y + 1];
         for (int i = 0; i < transform.childCount; ++i)
         {
-            Swappable tile = transform.GetChild(i).GetComponent<Swappable>();
+            Tile tile = transform.GetChild(i).GetComponent<Tile>();
+            tile.Setup();
             tiles[tile.pos.x, tile.pos.y] = tile;
         }
+        SetupBoard();
     }
 
-    public bool SelectSwappable(Swappable swappable)
+    public void SetupBoard()
+    {
+
+    }
+
+    public bool SelectSwappable(Tile swappable)
     {
         if (!selected)
         {
@@ -67,7 +74,7 @@ public class Board : MonoBehaviour
         }
         else if (selected != swappable)
         {
-            if (Swappable.IsAdjacent(selected.pos, swappable.pos))
+            if (Tile.IsAdjacent(selected.pos, swappable.pos))
             {
                 Coroutine[] coroutines = new Coroutine[2];
                 selected.HighLight(false);
@@ -86,16 +93,16 @@ public class Board : MonoBehaviour
         return false;
     }
 
-    public Swappable[] GetAdjacent(Vector3Int[] toCheck)
+    public Tile[] GetAdjacent(Vector3Int[] toCheck)
     {
-        List<Swappable> adjTiles = new List<Swappable>();
+        List<Tile> adjTiles = new List<Tile>();
 
         for (int i = 0; i < toCheck.Length; ++i)
         {
-            List<Swappable> hMatches = new List<Swappable>();
-            List<Swappable> vMatches = new List<Swappable>();
+            List<Tile> hMatches = new List<Tile>();
+            List<Tile> vMatches = new List<Tile>();
 
-            Swappable tile = tiles[toCheck[i].x, toCheck[i].y];
+            Tile tile = tiles[toCheck[i].x, toCheck[i].y];
             //Check Left
             if (toCheck[i].x > 0 && tile.colour == tiles[toCheck[i].x - 1, toCheck[i].y].colour)
             {
@@ -167,7 +174,7 @@ public class Board : MonoBehaviour
         return adjTiles.ToArray();
     }
 
-    public Coroutine[] ClearTiles(Swappable[] toClear)
+    public Coroutine[] ClearTiles(Tile[] toClear)
     {
         List<Coroutine> coroutines = new List<Coroutine>();
         for(int i = 0; i <  toClear.Length; ++i)
@@ -190,8 +197,8 @@ public class Board : MonoBehaviour
             Transform tile = transform.GetChild(i);
             int colour = tile.GetSiblingIndex() % colors.Length;
             tile.GetComponent<UnityEngine.UI.Image>().color = colors[colour];
-            tile.GetComponent<Swappable>().pos = currentPos;
-            tile.GetComponent<Swappable>().colour = colour;
+            tile.GetComponent<Tile>().pos = currentPos;
+            tile.GetComponent<Tile>().colour = colour;
             tile.position = Grid.GetCellCenterWorld(currentPos);
             ++currentPos.x;
             if (currentPos.x > maxX)
@@ -206,7 +213,7 @@ public class Board : MonoBehaviour
     {
         for (int i = 0; i < coroutines.Length; ++i)
             yield return coroutines[i];
-        Swappable[] adjTiles = GetAdjacent(tiles);
+        Tile[] adjTiles = GetAdjacent(tiles);
         Coroutine[] clrCoroutines = ClearTiles(adjTiles);
         StartCoroutine(WaitForClear(clrCoroutines));
     }
@@ -258,7 +265,7 @@ public class Board : MonoBehaviour
 
     private Coroutine SpawnAndMove(int x, int y, int spawnHeight)
     {
-        Swappable newTile = Instantiate(tilePrefab, transform).GetComponent<Swappable>();
+        Tile newTile = Instantiate(tilePrefab, transform).GetComponent<Tile>();
         newTile.transform.position = Grid.GetCellCenterWorld(new Vector3Int(x, spawnHeight, 0));
         newTile.Setup();
         tiles[x, y] = newTile;
