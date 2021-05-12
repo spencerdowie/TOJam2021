@@ -86,17 +86,14 @@ public class Board : MonoBehaviour
         return false;
     }
 
-    public void CheckAdjacent(Vector3Int[] toCheck)
+    public Swappable[] GetAdjacent(Vector3Int[] toCheck)
     {
-        List<Coroutine> coroutines = new List<Coroutine>();
-        List<Vector3Int> tileGroups = new List<Vector3Int>();
+        List<Swappable> adjTiles = new List<Swappable>();
 
         for (int i = 0; i < toCheck.Length; ++i)
         {
             List<Swappable> hMatches = new List<Swappable>();
             List<Swappable> vMatches = new List<Swappable>();
-            List<Vector3Int> hTiles = new List<Vector3Int>();
-            List<Vector3Int> vTiles = new List<Vector3Int>();
 
             Swappable tile = tiles[toCheck[i].x, toCheck[i].y];
             //Check Left
@@ -145,14 +142,11 @@ public class Board : MonoBehaviour
             {
                 for (int j = 0; j < hMatches.Count; ++j)
                 {
-                    if (tileGroups.Contains(hMatches[j].pos))
+                    if (adjTiles.Contains(hMatches[j]))
                         continue;
 
-                    hMatches[j].HighLight();
-                    coroutines.Add(hMatches[j].Clear());
-                    hTiles.Add(hMatches[j].pos);
+                    adjTiles.Add(hMatches[j]);
                 }
-                tileGroups.AddRange(hTiles.ToArray());
             }
             if (vMatches.Count < 3)
             {
@@ -162,22 +156,28 @@ public class Board : MonoBehaviour
             {
                 for (int j = 0; j < vMatches.Count; ++j)
                 {
-                    if (tileGroups.Contains(vMatches[j].pos))
+                    if (adjTiles.Contains(vMatches[j]))
                         continue;
 
-                    vMatches[j].HighLight();
-                    coroutines.Add(vMatches[j].Clear());
-                    vTiles.Add(vMatches[j].pos);
+                    adjTiles.Add(vMatches[j]);
                 }
-                tileGroups.AddRange(vTiles.ToArray());
             }
         }
 
-        for(int i = 0; i < tileGroups.Count; ++i)
+        return adjTiles.ToArray();
+    }
+
+    public Coroutine[] ClearTiles(Swappable[] toClear)
+    {
+        List<Coroutine> coroutines = new List<Coroutine>();
+        for(int i = 0; i <  toClear.Length; ++i)
         {
-            tiles[tileGroups[i].x, tileGroups[i].y] = null;
+            toClear[i].HighLight();
+            coroutines.Add(toClear[i].Clear());
+            Vector3Int pos = toClear[i].pos;
+            tiles[pos.x, pos.y] = null;
         }
-        StartCoroutine(WaitForClear(coroutines.ToArray()));
+        return coroutines.ToArray();
     }
 
     public void AlignChildrenToGrid()
@@ -206,7 +206,9 @@ public class Board : MonoBehaviour
     {
         for (int i = 0; i < coroutines.Length; ++i)
             yield return coroutines[i];
-        CheckAdjacent(tiles);
+        Swappable[] adjTiles = GetAdjacent(tiles);
+        Coroutine[] clrCoroutines = ClearTiles(adjTiles);
+        StartCoroutine(WaitForClear(clrCoroutines));
     }
 
     private IEnumerator WaitForClear(Coroutine[] coroutines)
