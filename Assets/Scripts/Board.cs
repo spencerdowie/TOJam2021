@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -98,30 +97,64 @@ public class Board : MonoBehaviour
 
     public void SetupBoard()
     {
+        Tile[] allTiles = new Tile[(max.x + 1) * (max.y + 1)];
+        for (int i = 0; i < tiles.Length; ++i)
+            allTiles[i] = tiles[i % (max.x + 1), i / (max.x + 1)];
 
+        Tile[] matches = GetAdjacentMatches(allTiles);
+        int count = 0, maxCount = 50;
+        while (matches.Length > 0 && count < maxCount)
+        {
+            ++count;
+            int matchLength = 1;
+            for (int i = 0; i < matches.Length; ++i)
+            {
+                if (i + 1 < matches.Length && matches[i].Colour == matches[i + 1].Colour)
+                {
+                    ++matchLength;
+                }
+                else
+                {
+                    int randTile = i - Random.Range(0, matchLength);
+                    Vector3Int adjVec3 = GetRandAdjacentVec3(matches[randTile].pos);
+                    Tile adjTile = tiles[adjVec3.x, adjVec3.y];
+
+                    Debug.Log($"Swap {matches[randTile].pos} and {adjTile.pos}: {matches[randTile].Colour} and {adjTile.Colour}");
+
+                    int swapColour = matches[randTile].Colour;
+                    matches[randTile].Colour = adjTile.Colour;
+                    adjTile.Colour = swapColour;
+
+                    matchLength = 1;
+                }
+            }
+            matches = GetAdjacentMatches(allTiles);
+        }
+        if(count == maxCount)
+            Debug.LogError($"Over count");
     }
 
-    public bool SelectSwappable(Tile swappable)
+    public bool SelectTile(Tile tile)
     {
         if (!selected)
         {
-            selected = swappable;
+            selected = tile;
             selected.HighLight();
             return true;
         }
-        else if (selected != swappable)
+        else if (selected != tile)
         {
-            if (Tile.IsAdjacent(selected.pos, swappable.pos))
+            if (Tile.IsAdjacent(selected.pos, tile.pos))
             {
                 Coroutine[] coroutines = new Coroutine[2];
                 selected.HighLight(false);
-                coroutines[0] = StartCoroutine(selected.MoveToCoroutine(swappable.pos));
-                coroutines[1] = StartCoroutine(swappable.MoveToCoroutine(selected.pos));
+                coroutines[0] = StartCoroutine(selected.MoveToCoroutine(tile.pos));
+                coroutines[1] = StartCoroutine(tile.MoveToCoroutine(selected.pos));
 
-                tiles[selected.pos.x, selected.pos.y] = swappable;
-                tiles[swappable.pos.x, swappable.pos.y] = selected;
+                tiles[selected.pos.x, selected.pos.y] = tile;
+                tiles[tile.pos.x, tile.pos.y] = selected;
 
-                StartCoroutine(WaitForMove(new Vector3Int[] { selected.pos, swappable.pos }, coroutines));
+                StartCoroutine(WaitForMove(new Tile[] { selected, tile }, coroutines));
 
                 selected = null;
                 return true;
@@ -235,7 +268,7 @@ public class Board : MonoBehaviour
             int colour = tile.GetSiblingIndex() % colors.Length;
             tile.GetComponent<UnityEngine.UI.Image>().color = colors[colour];
             tile.GetComponent<Tile>().pos = currentPos;
-            tile.GetComponent<Tile>().colour = colour;
+            tile.GetComponent<Tile>().Colour = colour;
             tile.position = Grid.GetCellCenterWorld(currentPos);
             ++currentPos.x;
             if (currentPos.x > maxX)

@@ -7,22 +7,31 @@ using UnityEngine.EventSystems;
 public class Tile : MonoBehaviour, IPointerClickHandler
 {
     public Vector3Int pos = new Vector3Int();
-    public int colour;
+    private int colour;
     private GameObject highlight;
     [SerializeField] private AnimationCurve swapCurve;
 
-    public void Setup()
+    public int Colour
+    {
+        get => colour;
+        set
+        {
+            colour = value;
+            GetComponent<Image>().color = Board.Instance.colors[colour];
+        }
+    }
+
+    public void Setup(bool rand = true)
     {
         pos = Board.Instance.Grid.WorldToCell(transform.position);
-        colour = transform.GetSiblingIndex() % 4;//Random.Range(0, Board.Instance.colors.Length);
-        GetComponent<Image>().color = Board.Instance.colors[colour];
+        Colour = rand ? Random.Range(0, Board.Instance.colors.Length) : transform.GetSiblingIndex() % 4;
         highlight = transform.GetChild(0).gameObject;
         name = $"Tile[{pos.x},{pos.y}]";
     }
 
     public void OnPointerClick(PointerEventData e)
     {
-        Board.Instance.SelectSwappable(this);
+        Board.Instance.SelectTile(this);
     }
 
     public void HighLight(bool enabled = true)
@@ -68,37 +77,37 @@ public class Tile : MonoBehaviour, IPointerClickHandler
         return Mathf.Abs(posABDiff) == 1;
     }
 
-    public static List<Vector3Int> GetAdjacent(Vector3Int pos)
-    {
-        List<Vector3Int> tiles = new List<Vector3Int>();
+    //public static List<Vector3Int> GetAdjacent(Vector3Int pos)
+    //{
+    //    List<Vector3Int> tiles = new List<Vector3Int>();
+    //
+    //
+    //
+    //    return tiles;
+    //}
 
-
-
-        return tiles;
-    }
-
-    public static Vector3Int GetAdjacent(Vector3Int pos, int direction)
-    {
-        Vector3Int adjacent = pos;
-        switch(direction)
-        {
-            case 0:
-                adjacent.y += 1;
-                break;
-            case 1:
-                adjacent.x += 1;
-                break;
-            case 2:
-                adjacent.y -= 1;
-                break;
-            case 3:
-                adjacent.x -= 1;
-                break;
-            default:
-                Debug.LogError("Not a valid direction");
-                break;
-        }
-
-        return adjacent;
-    }
+    //public static Vector3Int GetAdjacent(Vector3Int pos, int direction)
+    //{
+    //    Vector3Int adjacent = pos;
+    //    switch(direction)
+    //    {
+    //        case 0:
+    //            adjacent.y += 1;
+    //            break;
+    //        case 1:
+    //            adjacent.x += 1;
+    //            break;
+    //        case 2:
+    //            adjacent.y -= 1;
+    //            break;
+    //        case 3:
+    //            adjacent.x -= 1;
+    //            break;
+    //        default:
+    //            Debug.LogError("Not a valid direction");
+    //            break;
+    //    }
+    //
+    //    return adjacent;
+    //}
 }
