@@ -37,6 +37,43 @@ public class Board : MonoBehaviour
         }
     }
 
+    public static Vector3Int DirectionIntoOffset(int dir)
+    {
+        Vector3Int vecDir = Vector3Int.zero;
+        switch(dir)
+        {
+            case 0:
+                vecDir.y += 1;
+                break;
+            case 1:
+                vecDir.x += 1;
+                break;
+            case 2:
+                vecDir.y -= 1;
+                break;
+            case 3:
+                vecDir.x -= 1;
+                break;
+        }
+        return vecDir;
+    }
+
+    public Vector3Int GetRandAdjacentVec3(Vector3Int pos)
+    {
+        List<int> directions = new List<int>(new int[]{ 0,1,2,3});
+        if (pos.x == 0)
+            directions.Remove(3);
+        else if (pos.x == Max.x)
+            directions.Remove(1);
+
+        if (pos.y == 0)
+            directions.Remove(2);
+        else if (pos.y == Max.y)
+            directions.Remove(0);
+
+        return pos + DirectionIntoOffset(directions[Random.Range(0, directions.Count)]);
+    }
+    
     private void Awake()
     {
         if (!instance)
