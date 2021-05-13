@@ -93,7 +93,7 @@ public class Board : MonoBehaviour
         return false;
     }
 
-    public Tile[] GetAdjacent(Vector3Int[] toCheck)
+    public Tile[] GetAdjacentMatches(Tile[] toCheck)
     {
         List<Tile> adjTiles = new List<Tile>();
 
@@ -102,43 +102,43 @@ public class Board : MonoBehaviour
             List<Tile> hMatches = new List<Tile>();
             List<Tile> vMatches = new List<Tile>();
 
-            Tile tile = tiles[toCheck[i].x, toCheck[i].y];
+            Vector3Int pos = toCheck[i].pos;
             //Check Left
-            if (toCheck[i].x > 0 && tile.colour == tiles[toCheck[i].x - 1, toCheck[i].y].colour)
+            if (pos.x > 0 && toCheck[i].Colour == tiles[pos.x - 1, pos.y].Colour)
             {
-                if (toCheck[i].x > 1 && tile.colour == tiles[toCheck[i].x - 2, toCheck[i].y].colour)
+                if (pos.x > 1 && toCheck[i].Colour == tiles[pos.x - 2, pos.y].Colour)
                 {
-                    hMatches.Add(tiles[toCheck[i].x - 2, toCheck[i].y]);
+                    hMatches.Add(tiles[pos.x - 2, pos.y]);
                 }
-                hMatches.Add(tiles[toCheck[i].x - 1, toCheck[i].y]);
+                hMatches.Add(tiles[pos.x - 1, pos.y]);
             }
-            hMatches.Add(tile);
+            hMatches.Add(toCheck[i]);
             //Check Right
-            if (toCheck[i].x < Max.x && tile.colour == tiles[toCheck[i].x + 1, toCheck[i].y].colour)
+            if (pos.x < Max.x && toCheck[i].Colour == tiles[pos.x + 1, pos.y].Colour)
             {
-                hMatches.Add(tiles[toCheck[i].x + 1, toCheck[i].y]);
-                if (toCheck[i].x < Max.x - 1 && tile.colour == tiles[toCheck[i].x + 2, toCheck[i].y].colour)
+                hMatches.Add(tiles[pos.x + 1, pos.y]);
+                if (pos.x < Max.x - 1 && toCheck[i].Colour == tiles[pos.x + 2, pos.y].Colour)
                 {
-                    hMatches.Add(tiles[toCheck[i].x + 2, toCheck[i].y]);
+                    hMatches.Add(tiles[pos.x + 2, pos.y]);
                 }
             }
             //Check Down
-            if (toCheck[i].y > 0 && tile.colour == tiles[toCheck[i].x, toCheck[i].y - 1].colour)
+            if (pos.y > 0 && toCheck[i].Colour == tiles[pos.x, pos.y - 1].Colour)
             {
-                if (toCheck[i].y > 1 && tile.colour == tiles[toCheck[i].x, toCheck[i].y - 2].colour)
+                if (pos.y > 1 && toCheck[i].Colour == tiles[pos.x, pos.y - 2].Colour)
                 {
-                    vMatches.Add(tiles[toCheck[i].x, toCheck[i].y - 2]);
+                    vMatches.Add(tiles[pos.x, pos.y - 2]);
                 }
-                vMatches.Add(tiles[toCheck[i].x, toCheck[i].y - 1]);
+                vMatches.Add(tiles[pos.x, pos.y - 1]);
             }
-            vMatches.Add(tile);
+            vMatches.Add(toCheck[i]);
             //Check Up
-            if (toCheck[i].y < Max.y && tile.colour == tiles[toCheck[i].x, toCheck[i].y + 1].colour)
+            if (pos.y < Max.y && toCheck[i].Colour == tiles[pos.x, pos.y + 1].Colour)
             {
-                vMatches.Add(tiles[toCheck[i].x, toCheck[i].y + 1]);
-                if (toCheck[i].y < Max.y - 1 && tile.colour == tiles[toCheck[i].x, toCheck[i].y + 2].colour)
+                vMatches.Add(tiles[pos.x, pos.y + 1]);
+                if (pos.y < Max.y - 1 && toCheck[i].Colour == tiles[pos.x, pos.y + 2].Colour)
                 {
-                    vMatches.Add(tiles[toCheck[i].x, toCheck[i].y + 2]);
+                    vMatches.Add(tiles[pos.x, pos.y + 2]);
                 }
             }
             if (hMatches.Count < 3)
@@ -209,11 +209,11 @@ public class Board : MonoBehaviour
         }
     }
 
-    private IEnumerator WaitForMove(Vector3Int[] tiles, Coroutine[] coroutines)
+    private IEnumerator WaitForMove(Tile[] tiles, Coroutine[] coroutines)
     {
         for (int i = 0; i < coroutines.Length; ++i)
             yield return coroutines[i];
-        Tile[] adjTiles = GetAdjacent(tiles);
+        Tile[] adjTiles = GetAdjacentMatches(tiles);
         Coroutine[] clrCoroutines = ClearTiles(adjTiles);
         StartCoroutine(WaitForClear(clrCoroutines));
     }
@@ -231,7 +231,7 @@ public class Board : MonoBehaviour
     private void SpawnNewTiles()
     {
         List<Coroutine> moveCoroutines = new List<Coroutine>();
-        List<Vector3Int> movedTiles = new List<Vector3Int>();
+        List<Tile> movedTiles = new List<Tile>();
 
         for (int x = 0; x <= Max.x; ++x)
         {
@@ -254,7 +254,7 @@ public class Board : MonoBehaviour
                     {
                         moveCoroutines.Add(SpawnAndMove(x, y, spawnHeight++));
                     }
-                    movedTiles.Add(new Vector3Int(x, y, 0));
+                    movedTiles.Add(tiles[x,y]);
                 }
             }
         }
