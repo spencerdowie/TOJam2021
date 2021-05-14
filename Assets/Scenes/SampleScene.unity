@@ -6153,11 +6153,6 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 612946361}
     m_Modifications:
-    - target: {fileID: 3160948688506539922, guid: dbe8f01829dc49c4288c345265eca1db,
-        type: 3}
-      propertyPath: swapCurve.m_Curve.Array.data[1].time
-      value: 0.5
-      objectReference: {fileID: 0}
     - target: {fileID: 4079766801545353978, guid: dbe8f01829dc49c4288c345265eca1db,
         type: 3}
       propertyPath: m_LocalPosition.x

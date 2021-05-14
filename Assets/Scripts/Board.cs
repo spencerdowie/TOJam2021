@@ -132,6 +132,13 @@ public class Board : MonoBehaviour
         }
         if(count == maxCount)
             Debug.LogError($"Over count");
+
+        for(int i = 0; i < allTiles.Length; ++i)
+        {
+            Vector3Int truePos = allTiles[i].pos;
+            allTiles[i].pos.y += Max.y + 1;
+            StartCoroutine(allTiles[i].FallInCoroutine(truePos));
+        }
     }
 
     public void SelectTile(Tile tile)

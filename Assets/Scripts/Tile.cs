@@ -9,7 +9,7 @@ public class Tile : MonoBehaviour, IPointerClickHandler
     public Vector3Int pos = new Vector3Int();
     private int colour;
     private GameObject highlight;
-    [SerializeField] private AnimationCurve swapCurve;
+    [SerializeField] private AnimationCurve swapCurve, fallInCurve;
 
     public int Colour
     {
@@ -51,6 +51,25 @@ public class Tile : MonoBehaviour, IPointerClickHandler
         {
             animTime += Time.deltaTime;
             transform.position = Vector3.Lerp(origin, destination, swapCurve.Evaluate(animTime));
+
+            yield return null;
+        }
+        transform.position = destination;
+    }
+
+    public IEnumerator FallInCoroutine(Vector3Int newPos)
+    {
+        yield return new WaitForSeconds(0.3f);
+        Vector3 origin = Board.Instance.Grid.GetCellCenterWorld(pos);
+        Vector3 destination = Board.Instance.Grid.GetCellCenterWorld(newPos);
+        pos = newPos;
+        name = $"Tile[{pos.x},{pos.y}]";
+        float animTime = 0f;
+        float curveEnd = fallInCurve.keys[fallInCurve.length - 1].time;
+        while (animTime < curveEnd)
+        {
+            animTime += Time.deltaTime;
+            transform.position = Vector3.Lerp(origin, destination, fallInCurve.Evaluate(animTime));
 
             yield return null;
         }
