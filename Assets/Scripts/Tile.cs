@@ -43,6 +43,8 @@ public class Tile : MonoBehaviour, IPointerClickHandler
     {
         Vector3 origin = Board.Instance.Grid.GetCellCenterWorld(pos);
         Vector3 destination = Board.Instance.Grid.GetCellCenterWorld(newPos);
+        pos = newPos;
+        name = $"Tile[{pos.x},{pos.y}]";
         float animTime = 0f;
         float curveEnd = swapCurve.keys[swapCurve.length-1].time;
         while (animTime < curveEnd)
@@ -53,8 +55,6 @@ public class Tile : MonoBehaviour, IPointerClickHandler
             yield return null;
         }
         transform.position = destination;
-        pos = Board.Instance.Grid.WorldToCell(transform.position);
-        name = $"Tile[{pos.x},{pos.y}]";
     }
 
     public IEnumerator Clear(float t)

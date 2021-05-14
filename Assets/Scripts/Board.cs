@@ -119,7 +119,7 @@ public class Board : MonoBehaviour
                     Vector3Int adjVec3 = GetRandAdjacentVec3(matches[randTile].pos);
                     Tile adjTile = tiles[adjVec3.x, adjVec3.y];
 
-                    Debug.Log($"Swap {matches[randTile].pos} and {adjTile.pos}: {matches[randTile].Colour} and {adjTile.Colour}");
+                    //Debug.Log($"Swap {matches[randTile].pos} and {adjTile.pos}: {matches[randTile].Colour} and {adjTile.Colour}");
 
                     int swapColour = matches[randTile].Colour;
                     matches[randTile].Colour = adjTile.Colour;
@@ -134,33 +134,54 @@ public class Board : MonoBehaviour
             Debug.LogError($"Over count");
     }
 
-    public bool SelectTile(Tile tile)
+    public void SelectTile(Tile tile)
     {
         if (!selected)
         {
             selected = tile;
             selected.HighLight();
-            return true;
         }
         else if (selected != tile)
         {
+            selected.HighLight(false);
             if (Tile.IsAdjacent(selected.pos, tile.pos))
             {
+                Vector3Int posA = selected.pos;
+                Vector3Int posB = tile.pos;
+
+                tiles[posA.x, posA.y] = tile;
+                tiles[posB.x, posB.y] = selected;
+
                 Coroutine[] coroutines = new Coroutine[2];
-                selected.HighLight(false);
-                coroutines[0] = StartCoroutine(selected.MoveToCoroutine(tile.pos));
-                coroutines[1] = StartCoroutine(tile.MoveToCoroutine(selected.pos));
+                coroutines[0] = StartCoroutine(selected.MoveToCoroutine(posB));
+                coroutines[1] = StartCoroutine(tile.MoveToCoroutine(posA));
 
-                tiles[selected.pos.x, selected.pos.y] = tile;
-                tiles[tile.pos.x, tile.pos.y] = selected;
+                Tile[] adjTiles = GetAdjacentMatches(new Tile[] { selected, tile });
+                
+                if (adjTiles.Length > 0)
+                {
+                    StartCoroutine(WaitForCoroutines(coroutines, () =>
+                    {
+                        Coroutine[] clearCoroutines = ClearTiles(adjTiles);
+                        StartCoroutine(WaitForCoroutines(clearCoroutines, FillEmptyTiles));
+                    }));
+                }
+                else
+                {
+                    tiles[posA.x, posA.y] = selected;
+                    tiles[posB.x, posB.y] = tile;
 
-                StartCoroutine(WaitForMove(new Tile[] { selected, tile }, coroutines));
-
-                selected = null;
-                return true;
+                    StartCoroutine(WaitForCoroutines(coroutines, () =>
+                    {
+                        StartCoroutine(tiles[posA.x, posA.y].MoveToCoroutine(posA));
+                        StartCoroutine(tiles[posB.x, posB.y].MoveToCoroutine(posB));
+                    }));
+                    
+                
+                }
             }
+            selected = null;
         }
-        return false;
     }
 
     public Tile[] GetAdjacentMatches(Tile[] toCheck)
@@ -279,26 +300,14 @@ public class Board : MonoBehaviour
         }
     }
 
-    private IEnumerator WaitForMove(Tile[] tiles, Coroutine[] coroutines)
+    private IEnumerator WaitForCoroutines(Coroutine[] coroutines, System.Action action = null)
     {
         for (int i = 0; i < coroutines.Length; ++i)
             yield return coroutines[i];
-        Tile[] adjTiles = GetAdjacentMatches(tiles);
-        Coroutine[] clrCoroutines = ClearTiles(adjTiles);
-        StartCoroutine(WaitForClear(clrCoroutines));
+        action?.Invoke();
     }
 
-    private IEnumerator WaitForClear(Coroutine[] coroutines)
-    {
-        for (int i = 0; i < coroutines.Length; ++i)
-        {
-            yield return coroutines[i];
-        }
-
-        SpawnNewTiles();
-    }
-
-    private void SpawnNewTiles()
+    private void FillEmptyTiles()
     {
         List<Coroutine> moveCoroutines = new List<Coroutine>();
         List<Tile> movedTiles = new List<Tile>();
@@ -329,8 +338,18 @@ public class Board : MonoBehaviour
             }
         }
 
-        if(movedTiles.Count > 0)
-            StartCoroutine(WaitForMove(movedTiles.ToArray(), moveCoroutines.ToArray()));
+        if (movedTiles.Count > 0)
+        {
+            Tile[] adjTiles = GetAdjacentMatches(movedTiles.ToArray());
+            if(adjTiles.Length > 0)
+            {
+                StartCoroutine(WaitForCoroutines(moveCoroutines.ToArray(), () =>
+                {
+                    Coroutine[] clearCoroutines = ClearTiles(adjTiles);
+                    StartCoroutine(WaitForCoroutines(clearCoroutines, FillEmptyTiles));
+                }));
+            }
+        }
     }
 
     private Coroutine SpawnAndMove(int x, int y, int spawnHeight)
