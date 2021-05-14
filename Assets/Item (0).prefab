@@ -89,7 +89,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   pos: {x: 0, y: 0, z: 0}
-  colour: 0
   swapCurve:
     serializedVersion: 2
     m_Curve:
