@@ -39,7 +39,7 @@ public class Board : MonoBehaviour
     public static Vector3Int DirectionIntoOffset(int dir)
     {
         Vector3Int vecDir = Vector3Int.zero;
-        switch(dir)
+        switch (dir)
         {
             case 0:
                 vecDir.y += 1;
@@ -59,7 +59,7 @@ public class Board : MonoBehaviour
 
     public Vector3Int GetRandAdjacentVec3(Vector3Int pos)
     {
-        List<int> directions = new List<int>(new int[]{ 0,1,2,3});
+        List<int> directions = new List<int>(new int[] { 0, 1, 2, 3 });
         if (pos.x == 0)
             directions.Remove(3);
         else if (pos.x == Max.x)
@@ -72,7 +72,7 @@ public class Board : MonoBehaviour
 
         return pos + DirectionIntoOffset(directions[Random.Range(0, directions.Count)]);
     }
-    
+
     private void Awake()
     {
         if (!instance)
@@ -130,10 +130,10 @@ public class Board : MonoBehaviour
             }
             matches = GetAdjacentMatches(allTiles);
         }
-        if(count == maxCount)
+        if (count == maxCount)
             Debug.LogError($"Over count");
 
-        for(int i = 0; i < allTiles.Length; ++i)
+        for (int i = 0; i < allTiles.Length; ++i)
         {
             Vector3Int truePos = allTiles[i].pos;
             allTiles[i].pos.y += Max.y + 1;
@@ -164,7 +164,7 @@ public class Board : MonoBehaviour
                 coroutines[1] = StartCoroutine(tile.MoveToCoroutine(posA));
 
                 Tile[] adjTiles = GetAdjacentMatches(new Tile[] { selected, tile });
-                
+
                 if (adjTiles.Length > 0)
                 {
                     StartCoroutine(WaitForCoroutines(coroutines, () =>
@@ -183,12 +183,28 @@ public class Board : MonoBehaviour
                         StartCoroutine(tiles[posA.x, posA.y].MoveToCoroutine(posA));
                         StartCoroutine(tiles[posB.x, posB.y].MoveToCoroutine(posB));
                     }));
-                    
-                
+
+
                 }
             }
             selected = null;
         }
+    }
+
+    public Tile[] FindTilesOfColour(int colour)
+    {
+        List<Tile> colourTiles = new List<Tile>();
+        for(int x = 0; x < Max.x + 1; ++x)
+        {
+            for (int y = 0; y < Max.y + 1; ++y)
+            {
+                if (tiles[x, y]?.Colour == colour)
+                {
+                    colourTiles.Add(tiles[x, y]);
+                }
+            }
+        }
+        return colourTiles.ToArray();
     }
 
     public Tile[] GetAdjacentMatches(Tile[] toCheck)
@@ -278,9 +294,9 @@ public class Board : MonoBehaviour
         for(int i = 0; i <  toClear.Length; ++i)
         {
             toClear[i].HighLight();
-            coroutines.Add(toClear[i].Clear());
             Vector3Int pos = toClear[i].pos;
             tiles[pos.x, pos.y] = null;
+            coroutines.Add(toClear[i].Clear());
         }
         return coroutines.ToArray();
     }

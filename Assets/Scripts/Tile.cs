@@ -76,13 +76,13 @@ public class Tile : MonoBehaviour, IPointerClickHandler
         transform.position = destination;
     }
 
-    public IEnumerator Clear(float t)
+    private IEnumerator Clear(float t)
     {
         yield return new WaitForSeconds(t);
         Destroy(gameObject);
     }
 
-    public Coroutine Clear()
+    public virtual Coroutine Clear()
     {
         return StartCoroutine(Clear(0.5f));
     }
