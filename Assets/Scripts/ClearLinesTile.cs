@@ -4,12 +4,14 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 
-public class PowerUpTile : Tile
+public class ClearLinesTile : Tile
 {
     private IEnumerator Clear(float t)
     {
-        Tile[] sameColourTiles = Board.Instance.FindTilesOfColour(Colour);
-        Board.Instance.ClearTiles(sameColourTiles);
+        Tile[] row = Board.Instance.GetRow(pos.y);
+        Tile[] column = Board.Instance.GetColumn(pos.x);
+        Board.Instance.ClearTiles(row);
+        Board.Instance.ClearTiles(column);
         yield return new WaitForSeconds(t);
         Destroy(gameObject);
     }

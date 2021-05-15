@@ -207,6 +207,28 @@ public class Board : MonoBehaviour
         return colourTiles.ToArray();
     }
 
+    public Tile[] GetRow(int row)
+    {
+        List<Tile> rowList = new List<Tile>();
+        for(int x = 0; x < Max.x + 1; ++x)
+        {
+            if (tiles[x, row])
+                rowList.Add(tiles[x, row]);
+        }
+        return rowList.ToArray();
+    }
+
+    public Tile[] GetColumn(int column)
+    {
+        List<Tile> columnList = new List<Tile>();
+        for (int y = 0; y < Max.y + 1; ++y)
+        {
+            if (tiles[column, y])
+                columnList.Add(tiles[column, y]);
+        }
+        return columnList.ToArray();
+    }
+
     public Tile[] GetAdjacentMatches(Tile[] toCheck)
     {
         List<Tile> adjTiles = new List<Tile>();
