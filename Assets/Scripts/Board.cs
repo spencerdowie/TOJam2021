@@ -10,7 +10,7 @@ public class Board : MonoBehaviour
     public Color[] colors = new Color[4];
     [SerializeField] private Vector2Int max = Vector2Int.zero;
     private Tile[,] tiles;
-    [SerializeField] private GameObject tilePrefab;
+    [SerializeField] private GameObject tilePrefab = null;
 
     public static Board Instance { get => instance; }
     public Grid Grid

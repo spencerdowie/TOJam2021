@@ -4,10 +4,63 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using Yarn;
 using Yarn.Unity;
 
 public class LineViewCustom : DialogueViewBase
 {
+    public static Dictionary<string, NodeType> nodeDict = new Dictionary<string, NodeType>()
+    {
+        {"Joke", NodeType.Joke },
+        {"Lifestyle", NodeType.Lifestyle },
+        {"Work", NodeType.Work },
+        {"Relationship", NodeType.Relationship }
+    };
+
+    public enum NodeType
+    {
+        NULL = -1,
+        Joke = 0,
+        Lifestyle,
+        Work,
+        Relationship
+    }
+
+    private struct NodeStruct
+    {
+        public Node node;
+        public NodeType type;
+        public bool isPositive;
+
+        public NodeStruct(Node node)
+        {
+            this.node = node;
+            if (node.Tags.Contains("Joke"))
+            {
+                type = NodeType.Joke;
+            }
+            else if (node.Tags.Contains("Work"))
+            {
+                type = NodeType.Work;
+            }
+            else if (node.Tags.Contains("Lifestyle"))
+            {
+                type = NodeType.Lifestyle;
+            }
+            else if (node.Tags.Contains("Relationship"))
+            {
+                type = NodeType.Relationship;
+            }
+            else
+            {
+                Debug.LogError("No type tag found.");
+                type = NodeType.Work;
+            }
+
+            isPositive = node.Tags.Contains("Positive");
+        }
+    }
+
     internal enum ContinueActionType
     {
         None,
@@ -71,6 +124,14 @@ public class LineViewCustom : DialogueViewBase
     [SerializeField]
     private GameObject textBoxPrefab = null;
 
+    private bool signal = false;
+    private NodeType signalType = NodeType.NULL;
+
+    private List<Node> jokeNodes = new List<Node>(),
+        lifestyleNodes = new List<Node>(),
+        workNodes = new List<Node>(),
+        relationshipNodes = new List<Node>();
+
     public void Start()
     {
         canvasGroup.alpha = 0;
@@ -87,6 +148,29 @@ public class LineViewCustom : DialogueViewBase
             continueAction?.Disable();
             continueAction.performed += UserPerformedSkipAction;
 #endif
+        DialogueRunner runner = FindObjectOfType<DialogueRunner>();
+        List<Node> nodes = new List<Node>(runner.yarnProject.GetProgram().Nodes.Values);
+        for (int i = 0; i < nodes.Count; ++i)
+        {
+            NodeStruct node = new NodeStruct(nodes[i]);
+            switch (node.type)
+            {
+                case NodeType.Joke:
+                    jokeNodes.Add(nodes[i]);
+                    break;
+                case NodeType.Work:
+                    workNodes.Add(nodes[i]);
+                    break;
+                case NodeType.Lifestyle:
+                    lifestyleNodes.Add(nodes[i]);
+                    break;
+                case NodeType.Relationship:
+                    relationshipNodes.Add(nodes[i]);
+                    break;
+            }
+        }
+
+        runner.AddCommandHandler<string>("WaitForType", WaitForSignal);
     }
 
 #if USE_INPUTSYSTEM && ENABLE_INPUT_SYSTEM
@@ -175,6 +259,11 @@ public class LineViewCustom : DialogueViewBase
                 continueActionReference?.action.Enable();
             }
 #endif
+
+        if(textBoxPrefab)
+        {
+            lineText = Instantiate(textBoxPrefab, transform).GetComponent<TextMeshProUGUI>();
+        }
 
         lineText.gameObject.SetActive(true);
         canvasGroup.gameObject.SetActive(true);
@@ -266,5 +355,51 @@ public class LineViewCustom : DialogueViewBase
     {
         yield return new WaitForSeconds(f);
         action.Invoke();
+    }
+
+    //private void SignalCheck()
+    //{
+    //    signal = true;
+    //}
+
+    private void SignalCheck(NodeType type)
+    {
+        signalType = type;
+    }
+
+    private IEnumerator WaitForSignalCoroutine(string signalName)
+    {
+        //if (!GameSignals.NodeTypeSignals.ContainsKey(signalName))
+        //{
+        //    Debug.LogError($"Can't find signal named: {signalName}.");
+        //    yield break;
+        //}
+        if (!nodeDict.ContainsKey(signalName))
+        {
+            Debug.LogError($"Can't find signal named: {signalName}.");
+            yield break;
+        }
+        NodeType waitFor = nodeDict[signalName];
+
+        signalType = NodeType.NULL;
+        //signal = false;
+        GameSignals.typedSignal.AddListener(SignalCheck);
+        //GameSignals.NodeTypeSignals[signalName].AddListener(SignalCheck);
+        //while (!signal)
+        //{
+        //    yield return null;
+        //}
+        while(signalType != waitFor)
+        {
+            yield return null;
+        }
+
+        GameSignals.typedSignal.RemoveListener(SignalCheck);
+        //GameSignals.NodeTypeSignals[signalName].RemoveListener(SignalCheck);
+    }
+
+    private Coroutine WaitForSignal(string signalName)
+    {
+        return StartCoroutine(WaitForSignalCoroutine(signalName));
     }
 }
