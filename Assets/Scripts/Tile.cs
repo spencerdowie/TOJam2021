@@ -24,6 +24,7 @@ public class Tile : MonoBehaviour, IPointerClickHandler
     public void Setup(bool rand = true)
     {
         pos = Board.Instance.Grid.WorldToCell(transform.position);
+        GetComponent<RectTransform>().sizeDelta = Board.Instance.Grid.cellSize;
         Colour = rand ? Random.Range(0, Board.Instance.colors.Length) : transform.GetSiblingIndex() % 4;
         highlight = transform.GetChild(0).gameObject;
         name = $"Tile[{pos.x},{pos.y}]";

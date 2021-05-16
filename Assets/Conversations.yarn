@@ -1,0 +1,188 @@
+title: Start
+tags: 
+colorID: 0
+position: -11,119
+---
+Empty Text
+===
+title: Node
+tags: Lifestyle Negative
+colorID: 0
+position: 497,263
+---
+Date: What’s your Neighbourhood like?
+Skelly: Quiet.
+Date: ...
+Skelly: ...
+Date: ...right.
+===
+title: Node_2
+tags: Work Negative
+colorID: 0
+position: 739,263
+---
+Date: What do you do for a livi…
+Skelly: ...
+Date: What do you do for work?
+Skelly: Oh, I’m an accountant.
+Date: Oh, that’s nice…
+Skelly: I know, I’m a talking Skeleton, and still can’t make that job interesting
+===
+title: Node_3
+tags: Lifestyle Positive
+colorID: 0
+position: 497,44
+---
+Date: This is a nice area
+Skelly: Yeah, but I have to be careful with the sun
+Date: ...?
+Skelly: I could bleach
+===
+title: Node_4
+tags: Joke Positive
+colorID: 0
+position: 239,-164
+---
+Skelly: I like to break the ice with a joke
+Date: Know any good ones
+Skelly: Not since I lost my funny bone!
+Date: ...
+Skelly: ...
+===
+title: Node_5
+tags: Relationship Positive
+colorID: 0
+position: 976,-164
+---
+Date: So… so you remember how you…
+Skelly: How I died?
+Date: ...Yeah...
+Skelly: I don’t, but I think that’s ok
+Date: Yeah?
+Skelly: Let’s me focus on the now
+===
+title: Node_6
+tags: Relationship Negative
+colorID: 0
+position: 976,496
+---
+Skelly: So I am what you expected?
+Date: I agreed to a date with a talking skeleton, I don’t know what I expected
+Skelly: That’s fair, I don’t know what I would expect either
+===
+title: Node_7
+tags: Joke Negative
+colorID: 0
+position: 239,263
+---
+Date: Are you thinking about anything in particular?
+Skelly: My head is pretty empty right now
+Date: ...
+Skelly: ...
+Date: Was that a joke?
+Skelly: No, but I feel like one
+===
+title: Node_8
+tags: Relationship Positive
+colorID: 0
+position: 976,44
+---
+Skelly: Hey if this isn’t working, we can call it whenever
+Date: Is it not working for you?
+Skelly :I...uhh.. I don’t know
+Date: Then I guess I’ll hang around until you make up your mind :)
+Skelly: ...ok :)
+===
+title: Node_9
+tags: Joke Positive
+colorID: 0
+position: 239,44
+---
+Date: Any Surprising upsides to being Skeleton?
+Skelly: I finally lost those few pounds I wanted to
+Date: ...was that ..?
+Skelly: That one was a joke, yes
+===
+title: Node_10
+tags: Lifestyle Positive
+colorID: 0
+position: 497,-164
+---
+Date: The Beach was a nice choice!
+Skelly: Yeah, way better than the park
+Date: ...?
+Skelly: Too many dogs
+===
+title: Node_11
+tags: Work Positive
+colorID: 0
+position: 739,44
+---
+Skelly: Tell me about your job
+Date: I’m a chef. Local place, nothing fancy, but I love it
+Skelly: That sounds really nice
+Date: You should come visit and... umm... err...
+Skelly: I would love to come by, even if it’s just to watch you cookl
+Date: ...Great :)
+===
+title: Node_12
+tags: Joke Negative
+colorID: 0
+position: 239,496
+---
+Date: Do you prefer winter or summer sports?
+Skelly: Mmm, Summer. I like to go out on the water
+Date: Big fan of Sculling?
+Skelly: ...
+Date: ...
+Date: Sorry...
+===
+title: Node_13
+tags: Work Positive
+colorID: 0
+position: 739,-164
+---
+Skelly: Have any hobbies?
+Date: Seems silly to bring it up
+Skelly: Oh?
+Date: I Press Flowers
+Skelly: Hey! Me too, gotta a great boost to my collection thanks to my funeral
+Date: [i]Snort[/i] Sorry, that shouldn’t be funny
+Skell: S’ok, it kinda really is
+===
+title: Node_14
+tags: Lifestyle Negative
+colorID: 0
+position: 497,496
+---
+Skelly: I’d run more if wasn’t so hard on my joints
+Date: A good pair of shoes should help!
+Skelly: And to make up for the lack of cartilage?
+Date: Ahh...
+Skelly: ...
+===
+title: Node_15
+tags: Work Negative
+colorID: 0
+position: 739,496
+---
+Date: So how have other people been reacting to...
+Skelly: The change?
+Date: Yeah
+Skelly: Took almost two weeks till someone at work said something
+Date: Ouch
+Skelly: Guess it’s confirmed, I was never the life of the party
+===
+title: Node_16
+tags: Relationship Positive
+colorID: 0
+position: 976,263
+---
+Skelly: [b]Whistle[/b]
+Date: What was that?
+Skelly: Oh jeez, sorry, there’s a crack in my hip, and the when the wind… whistle
+Date: ...
+Skelly: ...
+Date: [b]Whistle[/b]
+Date: Mind if I join you?
+===

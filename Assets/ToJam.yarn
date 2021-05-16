@@ -1,0 +1,19 @@
+title: Start
+tags: Green
+colorID: 0
+position: 223,-54
+---
+Date: This is a nice area
+Skelly: Yeah, but I have to be careful with the sun
+Date: ...?
+Skelly: I could bleach
+<<WaitForConvo green>>
+[[Node]]
+===
+title: Node
+tags: 
+colorID: 0
+position: 567,-53
+---
+Empty Text
+===
