@@ -12,6 +12,7 @@ public class Board : MonoBehaviour
     [SerializeField] private Vector2Int max = Vector2Int.zero;
     private Tile[,] tiles;
     [SerializeField] private GameObject tilePrefab = null;
+    private List<LineViewCustom.NodeType> foundTypes = new List<LineViewCustom.NodeType>();
 
     public static Board Instance { get => instance; }
     public Grid Grid
@@ -320,6 +321,10 @@ public class Board : MonoBehaviour
             Vector3Int pos = toClear[i].pos;
             tiles[pos.x, pos.y] = null;
             coroutines.Add(toClear[i].Clear());
+            if(!foundTypes.Contains((LineViewCustom.NodeType)toClear[i].Colour))
+            {
+                foundTypes.Add((LineViewCustom.NodeType)toClear[i].Colour);
+            }
         }
         return coroutines.ToArray();
     }
@@ -379,7 +384,7 @@ public class Board : MonoBehaviour
                     {
                         moveCoroutines.Add(SpawnAndMove(x, y, spawnHeight++));
                     }
-                    movedTiles.Add(tiles[x,y]);
+                    movedTiles.Add(tiles[x, y]);
                 }
             }
         }
@@ -387,7 +392,7 @@ public class Board : MonoBehaviour
         if (movedTiles.Count > 0)
         {
             Tile[] adjTiles = GetAdjacentMatches(movedTiles.ToArray());
-            if(adjTiles.Length > 0)
+            if (adjTiles.Length > 0)
             {
                 StartCoroutine(WaitForCoroutines(moveCoroutines.ToArray(), () =>
                 {
@@ -395,9 +400,17 @@ public class Board : MonoBehaviour
                     StartCoroutine(WaitForCoroutines(clearCoroutines, FillEmptyTiles));
                 }));
             }
+            else
+            {
+                for (int i = 0; i < foundTypes.Count; ++i)
+                {
+                    GameSignals.typedSignal.Dispatch(foundTypes[i]);
+                }
+                foundTypes.Clear();
+            }
         }
-    }
-
+    }    
+    
     private Coroutine SpawnAndMove(int x, int y, int spawnHeight)
     {
         Tile newTile = Instantiate(tilePrefab, transform).GetComponent<Tile>();
