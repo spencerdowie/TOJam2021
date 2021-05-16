@@ -8,6 +8,7 @@ public class Board : MonoBehaviour
     [SerializeField] private Tile selected;
     private Grid grid;
     public Color[] colors = new Color[4];
+    public Sprite[] Sprites = new Sprite[4];
     [SerializeField] private Vector2Int max = Vector2Int.zero;
     private Tile[,] tiles;
     [SerializeField] private GameObject tilePrefab;
