@@ -9,7 +9,7 @@ using Yarn.Unity;
 
 public class LineViewCustom : DialogueViewBase
 {
-    public static Dictionary<string, NodeType> nodeDict = new Dictionary<string, NodeType>()
+    public static Dictionary<string, NodeType> nodeTypeDict = new Dictionary<string, NodeType>()
     {
         {"Joke", NodeType.Joke },
         {"Lifestyle", NodeType.Lifestyle },
@@ -132,6 +132,11 @@ public class LineViewCustom : DialogueViewBase
         workNodes = new List<Node>(),
         relationshipNodes = new List<Node>();
 
+    private Dictionary<string, NodeStruct> nodeDict = new Dictionary<string, NodeStruct>();
+
+    private DialogueRunner runner = null;
+    private string nextNode = null;
+
     public void Start()
     {
         canvasGroup.alpha = 0;
@@ -148,8 +153,9 @@ public class LineViewCustom : DialogueViewBase
             continueAction?.Disable();
             continueAction.performed += UserPerformedSkipAction;
 #endif
-        DialogueRunner runner = FindObjectOfType<DialogueRunner>();
+        runner = FindObjectOfType<DialogueRunner>();
         List<Node> nodes = new List<Node>(runner.yarnProject.GetProgram().Nodes.Values);
+        runner.onNodeComplete.AddListener(NodeComplete);
         for (int i = 0; i < nodes.Count; ++i)
         {
             NodeStruct node = new NodeStruct(nodes[i]);
@@ -168,9 +174,12 @@ public class LineViewCustom : DialogueViewBase
                     relationshipNodes.Add(nodes[i]);
                     break;
             }
+            nodeDict[node.node.Name] = node;
         }
 
         runner.AddCommandHandler<string>("WaitForType", WaitForSignal);
+
+        runner.StartDialogue("Node");
     }
 
 #if USE_INPUTSYSTEM && ENABLE_INPUT_SYSTEM
@@ -364,7 +373,8 @@ public class LineViewCustom : DialogueViewBase
 
     private void SignalCheck(NodeType type)
     {
-        signalType = type;
+        if (type == signalType)
+            signal = true;
     }
 
     private IEnumerator WaitForSignalCoroutine(string signalName)
@@ -374,22 +384,17 @@ public class LineViewCustom : DialogueViewBase
         //    Debug.LogError($"Can't find signal named: {signalName}.");
         //    yield break;
         //}
-        if (!nodeDict.ContainsKey(signalName))
+        if (!nodeTypeDict.ContainsKey(signalName))
         {
             Debug.LogError($"Can't find signal named: {signalName}.");
             yield break;
         }
-        NodeType waitFor = nodeDict[signalName];
+        signalType = nodeTypeDict[signalName];
+        signal = false;
 
-        signalType = NodeType.NULL;
-        //signal = false;
         GameSignals.typedSignal.AddListener(SignalCheck);
         //GameSignals.NodeTypeSignals[signalName].AddListener(SignalCheck);
-        //while (!signal)
-        //{
-        //    yield return null;
-        //}
-        while(signalType != waitFor)
+        while (!signal)
         {
             yield return null;
         }
@@ -401,5 +406,42 @@ public class LineViewCustom : DialogueViewBase
     private Coroutine WaitForSignal(string signalName)
     {
         return StartCoroutine(WaitForSignalCoroutine(signalName));
+    }
+
+    private void NodeComplete(string nodeName)
+    {
+        Debug.Log(nodeDict[nodeName].type);
+
+        int curType = (int)nodeDict[nodeName].type;
+
+        int nextType = UnityEngine.Random.Range(0, 3);
+        if (nextType == curType)
+            ++nextType;
+
+        switch ((NodeType)nextType)
+        {
+            case NodeType.Joke:
+                nextNode = jokeNodes[UnityEngine.Random.Range(0, jokeNodes.Count)].Name;
+                break;
+            case NodeType.Lifestyle:
+                nextNode = lifestyleNodes[UnityEngine.Random.Range(0, lifestyleNodes.Count)].Name;
+                break;
+            case NodeType.Work:
+                nextNode = workNodes[UnityEngine.Random.Range(0, workNodes.Count)].Name;
+                break;
+            case NodeType.Relationship:
+                nextNode = relationshipNodes[UnityEngine.Random.Range(0, relationshipNodes.Count)].Name;
+                break;
+        }
+        StartCoroutine(WaitForSeconds(1f, NextNode));
+    }
+
+    private void NextNode()
+    {
+        if(nextNode != null)
+        {
+            runner.StartDialogue(nextNode);
+            nextNode = null;
+        }
     }
 }

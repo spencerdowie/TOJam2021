@@ -8,8 +8,7 @@ Skelly: Quiet.
 Date: ...
 Skelly: ...
 Date: ...right.
-<<WaitForType Work>>
-Skelly: After WaitForType
+<<WaitForType Lifestyle>>
 ===
 title: Node_2
 tags: Work Negative
@@ -22,6 +21,7 @@ Date: What do you do for work?
 Skelly: Oh, I’m an accountant.
 Date: Oh, that’s nice…
 Skelly: I know, I’m a talking Skeleton, and still can’t make that job interesting
+<<WaitForType Work>>
 ===
 title: Node_3
 tags: Lifestyle Positive
@@ -32,6 +32,7 @@ Date: This is a nice area
 Skelly: Yeah, but I have to be careful with the sun
 Date: ...?
 Skelly: I could bleach
+<<WaitForType Lifestyle>>
 ===
 title: Node_4
 tags: Joke Positive
@@ -43,6 +44,7 @@ Date: Know any good ones
 Skelly: Not since I lost my funny bone!
 Date: ...
 Skelly: ...
+<<WaitForType Joke>>
 ===
 title: Node_5
 tags: Relationship Positive
@@ -55,6 +57,7 @@ Date: ...Yeah...
 Skelly: I don’t, but I think that’s ok
 Date: Yeah?
 Skelly: Let’s me focus on the now
+<<WaitForType Relationship>>
 ===
 title: Node_6
 tags: Relationship Negative
@@ -64,6 +67,7 @@ position: 976,496
 Skelly: So I am what you expected?
 Date: I agreed to a date with a talking skeleton, I don’t know what I expected
 Skelly: That’s fair, I don’t know what I would expect either
+<<WaitForType Relationship>>
 ===
 title: Node_7
 tags: Joke Negative
@@ -76,6 +80,7 @@ Date: ...
 Skelly: ...
 Date: Was that a joke?
 Skelly: No, but I feel like one
+<<WaitForType Joke>>
 ===
 title: Node_8
 tags: Relationship Positive
@@ -87,6 +92,7 @@ Date: Is it not working for you?
 Skelly :I...uhh.. I don’t know
 Date: Then I guess I’ll hang around until you make up your mind :)
 Skelly: ...ok :)
+<<WaitForType Relationship>>
 ===
 title: Node_9
 tags: Joke Positive
@@ -97,6 +103,7 @@ Date: Any Surprising upsides to being Skeleton?
 Skelly: I finally lost those few pounds I wanted to
 Date: ...was that ..?
 Skelly: That one was a joke, yes
+<<WaitForType Joke>>
 ===
 title: Node_10
 tags: Lifestyle Positive
@@ -107,6 +114,7 @@ Date: The Beach was a nice choice!
 Skelly: Yeah, way better than the park
 Date: ...?
 Skelly: Too many dogs
+<<WaitForType Lifestyle>>
 ===
 title: Node_11
 tags: Work Positive
@@ -119,6 +127,7 @@ Skelly: That sounds really nice
 Date: You should come visit and... umm... err...
 Skelly: I would love to come by, even if it’s just to watch you cookl
 Date: ...Great :)
+<<WaitForType Work>>
 ===
 title: Node_12
 tags: Joke Negative
@@ -131,6 +140,7 @@ Date: Big fan of Sculling?
 Skelly: ...
 Date: ...
 Date: Sorry...
+<<WaitForType Joke>>
 ===
 title: Node_13
 tags: Work Positive
@@ -144,6 +154,7 @@ Date: I Press Flowers
 Skelly: Hey! Me too, gotta a great boost to my collection thanks to my funeral
 Date: [i]Snort[/i] Sorry, that shouldn’t be funny
 Skell: S’ok, it kinda really is
+<<WaitForType Work>>
 ===
 title: Node_14
 tags: Lifestyle Negative
@@ -155,6 +166,7 @@ Date: A good pair of shoes should help!
 Skelly: And to make up for the lack of cartilage?
 Date: Ahh...
 Skelly: ...
+<<WaitForType Lifestyle>>
 ===
 title: Node_15
 tags: Work Negative
@@ -167,6 +179,7 @@ Date: Yeah
 Skelly: Took almost two weeks till someone at work said something
 Date: Ouch
 Skelly: Guess it’s confirmed, I was never the life of the party
+<<WaitForType Work>>
 ===
 title: Node_16
 tags: Relationship Positive
@@ -180,4 +193,5 @@ Date: ...
 Skelly: ...
 Date: [b]Whistle[/b]
 Date: Mind if I join you?
+<<WaitForType Relationship>>
 ===
