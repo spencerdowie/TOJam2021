@@ -1,0 +1,23 @@
+fileFormatVersion: 2
+guid: 9a41284df37aa7b4796f498a457bba5c
+TrueTypeFontImporter:
+  externalObjects: {}
+  serializedVersion: 4
+  fontSize: 16
+  forceTextureCase: -2
+  characterSpacing: 0
+  characterPadding: 1
+  includeFontData: 1
+  fontName: OFL Sorts Mill Goudy
+  fontNames:
+  - OFL Sorts Mill Goudy
+  fallbackFontReferences:
+  - {fileID: 12800000, guid: 31278e443d4f2374dbb4a988719f9474, type: 3}
+  customCharacters: 
+  fontRenderingMode: 0
+  ascentCalculationMode: 1
+  useLegacyBoundsCalculation: 0
+  shouldRoundAdvanceValue: 1
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
