@@ -17,7 +17,6 @@ public class Tile : MonoBehaviour, IPointerClickHandler
         set
         {
             colour = value;
-            GetComponent<Image>().color = Board.Instance.colors[colour];
             GetComponent<Image>().overrideSprite = Board.Instance.Sprites[colour];
         }
     }

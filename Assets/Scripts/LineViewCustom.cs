@@ -99,16 +99,6 @@ public class LineViewCustom : DialogueViewBase
     [Min(0)]
     internal float typewriterEffectSpeed = 0f;
 
-    [SerializeField]
-    internal GameObject continueButton = null;
-
-    [SerializeField]
-    internal ContinueActionType continueActionType;
-
-    [SerializeField]
-    internal KeyCode continueActionKeyCode = KeyCode.Escape;
-
-
 #if USE_INPUTSYSTEM && ENABLE_INPUT_SYSTEM
         [SerializeField]
         internal InputActionReference continueActionReference = null;
@@ -119,10 +109,9 @@ public class LineViewCustom : DialogueViewBase
 
     private InterruptionFlag interruptionFlag = new InterruptionFlag();
 
-    LocalizedLine currentLine = null;
-
     [SerializeField]
     private GameObject textBoxPrefab = null;
+    private CanvasGroup currentLineCanvasGroup = null;
 
     private bool signal = false;
     private NodeType signalType = NodeType.NULL;
@@ -135,12 +124,9 @@ public class LineViewCustom : DialogueViewBase
     private Dictionary<string, NodeStruct> nodeDict = new Dictionary<string, NodeStruct>();
 
     private DialogueRunner runner = null;
-    private string nextNode = null;
 
     public void Start()
     {
-        canvasGroup.alpha = 0;
-
 #if USE_INPUTSYSTEM && ENABLE_INPUT_SYSTEM
             // If we are using an action reference, and it's not null,
             // configure it
@@ -155,7 +141,7 @@ public class LineViewCustom : DialogueViewBase
 #endif
         runner = FindObjectOfType<DialogueRunner>();
         List<Node> nodes = new List<Node>(runner.yarnProject.GetProgram().Nodes.Values);
-        runner.onNodeComplete.AddListener(NodeComplete);
+        //runner.onNodeComplete.AddListener(NodeComplete);
         for (int i = 0; i < nodes.Count; ++i)
         {
             NodeStruct node = new NodeStruct(nodes[i]);
@@ -179,7 +165,7 @@ public class LineViewCustom : DialogueViewBase
 
         runner.AddCommandHandler<string>("WaitForType", WaitForSignal);
 
-        runner.StartDialogue("Node");
+        StartCoroutine(WaitForSeconds(0.1f, () => runner.StartDialogue("Node")));
     }
 
 #if USE_INPUTSYSTEM && ENABLE_INPUT_SYSTEM
@@ -192,44 +178,6 @@ public class LineViewCustom : DialogueViewBase
     public void Reset()
     {
         canvasGroup = GetComponentInParent<CanvasGroup>();
-    }
-
-#if ENABLE_LEGACY_INPUT_MANAGER
-    public void Update()
-    {
-        // If the legacy input system is available, we are configured
-        // to use a keycode to skip lines, AND the skip keycode was
-        // just pressed, then skip
-        if (continueActionType == ContinueActionType.KeyCode)
-        {
-            if (UnityEngine.Input.GetKeyDown(continueActionKeyCode))
-            {
-                OnContinueClicked();
-            }
-        }
-    }
-#endif
-
-    public override void DismissLine(Action onDismissalComplete)
-    {
-#if USE_INPUTSYSTEM && ENABLE_INPUT_SYSTEM
-            continueAction?.Disable();
-            continueActionReference?.action?.Disable();
-#endif
-
-        currentLine = null;
-
-        if (useFadeEffect)
-        {
-            StartCoroutine(Effects.FadeAlpha(canvasGroup, 1, 0, fadeOutTime, onDismissalComplete));
-        }
-        else
-        {
-            canvasGroup.interactable = false;
-            canvasGroup.alpha = 0;
-            canvasGroup.blocksRaycasts = false;
-            onDismissalComplete();
-        }
     }
 
     public override void OnLineStatusChanged(LocalizedLine dialogueLine)
@@ -245,7 +193,7 @@ public class LineViewCustom : DialogueViewBase
                 break;
             case LineStatus.FinishedPresenting:
                 // The line has finished being delivered by all views.
-                StartCoroutine(WaitForSeconds(1f, ReadyForNextLine));
+                StartCoroutine(WaitForSeconds(2f, ReadyForNextLine));
                 break;
             case LineStatus.Dismissed:
                 break;
@@ -254,33 +202,19 @@ public class LineViewCustom : DialogueViewBase
 
     public override void RunLine(LocalizedLine dialogueLine, Action onDialogueLineFinished)
     {
-        currentLine = dialogueLine;
-
-#if USE_INPUTSYSTEM && ENABLE_INPUT_SYSTEM
-            // If we are using a custom Unity Input System action, enable
-            // it now.
-            if (continueActionType == ContinueActionType.InputSystemAction)
-            {
-                continueAction?.Enable();
-            }
-            else if (continueActionType == ContinueActionType.InputSystemActionFromAsset)
-            {
-                continueActionReference?.action.Enable();
-            }
-#endif
-
         if(textBoxPrefab)
         {
-            lineText = Instantiate(textBoxPrefab, transform).GetComponent<TextMeshProUGUI>();
+            Transform textboxTransform = Instantiate(textBoxPrefab, transform).transform;
+            if (dialogueLine.CharacterName == "Skelly")
+            {
+                textboxTransform.localScale = new Vector3(-1, 1, 1);
+                textboxTransform.GetChild(0).localScale = new Vector3(-1, 1, 1);
+            }
+            lineText = textboxTransform.GetComponentInChildren<TextMeshProUGUI>();
+            currentLineCanvasGroup = textboxTransform.GetComponent<CanvasGroup>();
         }
 
-        lineText.gameObject.SetActive(true);
         canvasGroup.gameObject.SetActive(true);
-
-        if (continueButton != null)
-        {
-            continueButton.SetActive(false);
-        }
 
         interruptionFlag.Clear();
 
@@ -317,7 +251,7 @@ public class LineViewCustom : DialogueViewBase
             }
 
             // Fade up and then call FadeComplete when done
-            StartCoroutine(Effects.FadeAlpha(canvasGroup, 0, 1, fadeInTime, () => FadeComplete(onDialogueLineFinished), interruptionFlag));
+            StartCoroutine(Effects.FadeAlpha(currentLineCanvasGroup, 0, 1, fadeInTime, () => FadeComplete(onDialogueLineFinished), interruptionFlag));
         }
         else
         {
@@ -350,26 +284,11 @@ public class LineViewCustom : DialogueViewBase
         }
     }
 
-    public void OnContinueClicked()
-    {
-        if (currentLine == null)
-        {
-            // We're not actually displaying a line. No-op.
-            return;
-        }
-        ReadyForNextLine();
-    }
-
     private IEnumerator WaitForSeconds(float f, Action action)
     {
         yield return new WaitForSeconds(f);
         action.Invoke();
     }
-
-    //private void SignalCheck()
-    //{
-    //    signal = true;
-    //}
 
     private void SignalCheck(NodeType type)
     {
@@ -377,8 +296,9 @@ public class LineViewCustom : DialogueViewBase
             signal = true;
     }
 
-    private IEnumerator WaitForSignalCoroutine(string signalName)
+    private IEnumerator WaitForSignalCoroutine(string signalName, Action<string> action)
     {
+        string currentNode = runner.CurrentNodeName;
         //if (!GameSignals.NodeTypeSignals.ContainsKey(signalName))
         //{
         //    Debug.LogError($"Can't find signal named: {signalName}.");
@@ -401,11 +321,12 @@ public class LineViewCustom : DialogueViewBase
 
         GameSignals.typedSignal.RemoveListener(SignalCheck);
         //GameSignals.NodeTypeSignals[signalName].RemoveListener(SignalCheck);
+        action(currentNode);
     }
 
-    private Coroutine WaitForSignal(string signalName)
+    private void WaitForSignal(string signalName)
     {
-        return StartCoroutine(WaitForSignalCoroutine(signalName));
+        StartCoroutine(WaitForSignalCoroutine(signalName, NodeComplete));
     }
 
     private void NodeComplete(string nodeName)
@@ -418,6 +339,7 @@ public class LineViewCustom : DialogueViewBase
         if (nextType == curType)
             ++nextType;
 
+        string nextNode = null;
         switch ((NodeType)nextType)
         {
             case NodeType.Joke:
@@ -433,15 +355,16 @@ public class LineViewCustom : DialogueViewBase
                 nextNode = relationshipNodes[UnityEngine.Random.Range(0, relationshipNodes.Count)].Name;
                 break;
         }
-        StartCoroutine(WaitForSeconds(1f, NextNode));
+        NextNode(nextNode);
+
+        StartCoroutine(Effects.FadeAlpha(canvasGroup, 1, 0, fadeOutTime));
     }
 
-    private void NextNode()
+    private void NextNode(string nextNode)
     {
         if(nextNode != null)
         {
             runner.StartDialogue(nextNode);
-            nextNode = null;
         }
     }
 }
