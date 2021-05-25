@@ -6,7 +6,7 @@ public class IntroButtonController : MonoBehaviour
 {
     public Animator transition;
     public float transitionTime = 1f;
-    public string sceneName;
+    public string sceneName, dialogueScene, pauseScene;
 
     public void OnPlay()
     {
@@ -23,5 +23,7 @@ public class IntroButtonController : MonoBehaviour
 
         // Load scene
         SceneManager.LoadScene(sceneName);
+        SceneManager.LoadScene(dialogueScene, LoadSceneMode.Additive);
+        SceneManager.LoadScene(pauseScene, LoadSceneMode.Additive);
     }
 }

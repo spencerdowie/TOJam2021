@@ -5,6 +5,7 @@ using UnityEngine.Assertions;
 
 public static class GameSignals
 {
+    public static TypedSignal<bool> PauseGame = new TypedSignal<bool>("PauseGame");
     public static TypedSignal<LineViewCustom.NodeType> typedSignal = new TypedSignal<LineViewCustom.NodeType>("MatchType");
     public static Dictionary<string, Signal> NodeTypeSignals = new Dictionary<string, Signal>()
     {
