@@ -26,4 +26,9 @@ public class IntroButtonController : MonoBehaviour
         SceneManager.LoadScene(dialogueScene, LoadSceneMode.Additive);
         SceneManager.LoadScene(pauseScene, LoadSceneMode.Additive);
     }
+
+    public void ExitGame()
+    {
+        Application.Quit();
+    }
 }
