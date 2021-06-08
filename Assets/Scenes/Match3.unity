@@ -7240,7 +7240,7 @@ GameObject:
   - component: {fileID: 681375583}
   - component: {fileID: 681375582}
   m_Layer: 5
-  m_Name: Canvas
+  m_Name: MainCanvas
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -8307,7 +8307,7 @@ GameObject:
   - component: {fileID: 763263794}
   - component: {fileID: 763263793}
   m_Layer: 5
-  m_Name: Canvas
+  m_Name: FadeCanvas
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

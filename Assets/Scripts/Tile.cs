@@ -10,6 +10,7 @@ public class Tile : MonoBehaviour, IPointerClickHandler
     private int colour;
     private GameObject highlight;
     [SerializeField] private AnimationCurve swapCurve, fallInCurve;
+    public bool interactable = true, paused = false;
 
     public int Colour
     {
@@ -32,7 +33,8 @@ public class Tile : MonoBehaviour, IPointerClickHandler
 
     public void OnPointerClick(PointerEventData e)
     {
-        Board.Instance.SelectTile(this);
+        if(interactable)
+            Board.Instance.SelectTile(this);
     }
 
     public void HighLight(bool enabled = true)
@@ -50,8 +52,11 @@ public class Tile : MonoBehaviour, IPointerClickHandler
         float curveEnd = swapCurve.keys[swapCurve.length-1].time;
         while (animTime < curveEnd)
         {
-            animTime += Time.deltaTime;
-            transform.position = Vector3.Lerp(origin, destination, swapCurve.Evaluate(animTime));
+            if (!paused)
+            {
+                animTime += Time.deltaTime;
+                transform.position = Vector3.Lerp(origin, destination, swapCurve.Evaluate(animTime));
+            }
 
             yield return null;
         }

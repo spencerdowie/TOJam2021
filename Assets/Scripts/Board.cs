@@ -13,7 +13,8 @@ public class Board : MonoBehaviour
     private Tile[,] tiles;
     [SerializeField] private GameObject tilePrefab = null;
     private List<LineViewCustom.NodeType> foundTypes = new List<LineViewCustom.NodeType>();
-
+    //private List<IEnumerator> movingTiles = new List<IEnumerator>();
+    //private bool paused = false;
     public static Board Instance { get => instance; }
     public Grid Grid
     {
@@ -75,6 +76,58 @@ public class Board : MonoBehaviour
         return pos + DirectionIntoOffset(directions[Random.Range(0, directions.Count)]);
     }
 
+    public IEnumerator Sequence(System.Action endSequence, params IEnumerator[] enumerators)
+    {
+        for(int i = 0; i < enumerators.Length; ++i)
+        {
+            yield return StartCoroutine(enumerators[i]);
+        }
+
+        endSequence.Invoke();
+    }
+
+    public IEnumerator Sequence( params IEnumerator[] enumerators)
+    {
+        for (int i = 0; i < enumerators.Length; ++i)
+        {
+            yield return StartCoroutine(enumerators[i]);
+        }
+    }
+
+    public IEnumerator Concurrent(params IEnumerator[] enumerators)
+    {
+        Coroutine[] coroutines = new Coroutine[enumerators.Length];
+        for(int i = 0; i < enumerators.Length; ++i)
+        {
+            coroutines[i] = StartCoroutine(enumerators[i]);
+        }
+        for(int i = 0; i < coroutines.Length; ++i)
+        {
+            yield return coroutines[i];
+        }
+    }
+
+    public IEnumerator Concurrent(System.Action endConcurrent, params IEnumerator[] enumerators)
+    {
+        Coroutine[] coroutines = new Coroutine[enumerators.Length];
+        for (int i = 0; i < enumerators.Length; ++i)
+        {
+            coroutines[i] = StartCoroutine(enumerators[i]);
+        }
+        for (int i = 0; i < coroutines.Length; ++i)
+        {
+            yield return coroutines[i];
+        }
+
+        endConcurrent.Invoke();
+    }
+
+    public IEnumerator WaitForSeconds(float seconds, string message)
+    {
+        yield return new WaitForSeconds(seconds);
+        Debug.Log(message);
+    }
+
     private void Awake()
     {
         if (!instance)
@@ -95,6 +148,11 @@ public class Board : MonoBehaviour
             tiles[tile.pos.x, tile.pos.y] = tile;
         }
         SetupBoard();
+        GameSignals.PauseGame.AddListener(SetTilesPaused);
+        Debug.Log("SequenceStart");
+        StartCoroutine(Sequence(() => Debug.Log("Sequence End"), WaitForSeconds(5, "seq 5"), WaitForSeconds(5, "seq 10"), WaitForSeconds(5, "seq 15")));
+        Debug.Log("ConcurrentStart");
+        StartCoroutine(Concurrent(() => Debug.Log("Concurrent End"), WaitForSeconds(5, "conc 5"), WaitForSeconds(5, "conc 5"), WaitForSeconds(5, "conc 5")));
     }
 
     public void SetupBoard()
@@ -155,11 +213,19 @@ public class Board : MonoBehaviour
             selected.HighLight(false);
             if (Tile.IsAdjacent(selected.pos, tile.pos))
             {
+                SetTilesInteractable(false);
+
                 Vector3Int posA = selected.pos;
                 Vector3Int posB = tile.pos;
 
                 tiles[posA.x, posA.y] = tile;
                 tiles[posB.x, posB.y] = selected;
+
+                //IEnumerator[] enumerators =
+                //{
+                //    selected.MoveToCoroutine(posB),
+                //    tile.MoveToCoroutine(posA)
+                //};
 
                 Coroutine[] coroutines = new Coroutine[2];
                 coroutines[0] = StartCoroutine(selected.MoveToCoroutine(posB));
@@ -169,22 +235,40 @@ public class Board : MonoBehaviour
 
                 if (adjTiles.Length > 0)
                 {
-                    StartCoroutine(WaitForCoroutines(coroutines, () =>
-                    {
-                        Coroutine[] clearCoroutines = ClearTiles(adjTiles);
-                        StartCoroutine(WaitForCoroutines(clearCoroutines, FillEmptyTiles));
-                    }));
+                    StartCoroutine(
+                        Sequence(
+                            WaitForCoroutines(coroutines),
+                            WaitForCoroutines(ClearTiles(adjTiles), FillEmptyTiles)
+                        )
+                     );
+                    //StartCoroutine(WaitForCoroutines(coroutines, () =>
+                    //{
+                    //    Coroutine[] clearCoroutines = ClearTiles(adjTiles);
+                    //    StartCoroutine(WaitForCoroutines(clearCoroutines, FillEmptyTiles));
+                    //}));
                 }
                 else
                 {
                     tiles[posA.x, posA.y] = selected;
                     tiles[posB.x, posB.y] = tile;
 
-                    StartCoroutine(WaitForCoroutines(coroutines, () =>
-                    {
-                        StartCoroutine(tiles[posA.x, posA.y].MoveToCoroutine(posA));
-                        StartCoroutine(tiles[posB.x, posB.y].MoveToCoroutine(posB));
-                    }));
+                    StartCoroutine(
+                        Sequence(
+                            ()=>SetTilesInteractable(true),
+                            WaitForCoroutines(coroutines),
+                            WaitForCoroutines(
+                                new Coroutine[] { 
+                                    StartCoroutine(tiles[posA.x, posA.y].MoveToCoroutine(posA)),
+                                    StartCoroutine(tiles[posB.x, posB.y].MoveToCoroutine(posB))
+                                })
+                            )
+                        );
+                    //StartCoroutine(WaitForCoroutines(coroutines, () =>
+                    //{
+                    //    StartCoroutine(tiles[posA.x, posA.y].MoveToCoroutine(posA));
+                    //    StartCoroutine(tiles[posB.x, posB.y].MoveToCoroutine(posB));
+                    //    SetTilesInteractable(true);
+                    //}));
 
 
                 }
@@ -407,6 +491,7 @@ public class Board : MonoBehaviour
                     GameSignals.typedSignal.Dispatch(foundTypes[i]);
                 }
                 foundTypes.Clear();
+                SetTilesInteractable(true);
             }
         }
     }    
@@ -419,4 +504,37 @@ public class Board : MonoBehaviour
         tiles[x, y] = newTile;
         return StartCoroutine(newTile.MoveToCoroutine(new Vector3Int(x, y, 0)));
     }
+
+    public void SetTilesInteractable(bool interactable)
+    {
+        for (int x = 0; x < Max.x + 1; ++x)
+        {
+            for (int y = 0; y < Max.y + 1; ++y)
+            {
+                tiles[x, y].interactable = interactable;
+            }
+        }
+    }
+
+    public void SetTilesPaused(bool paused)
+    {
+        for (int x = 0; x < Max.x + 1; ++x)
+        {
+            for (int y = 0; y < Max.y + 1; ++y)
+            {
+                tiles[x, y].paused = paused;
+            }
+        }
+    }
+
+    //private void Update()
+    //{
+    //    if (!paused)
+    //    {
+    //        for (int i = 0; i < movingTiles.Count; ++i)
+    //        {
+    //            movingTiles[i].MoveNext();
+    //        }
+    //    }
+    //}
 }

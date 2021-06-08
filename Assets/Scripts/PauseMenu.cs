@@ -7,6 +7,7 @@ public class PauseMenu : MonoBehaviour
     [SerializeField] private RectTransform menuPanel;
     [SerializeField] private AnimationCurve menuSpeed;
     [SerializeField] private Vector3 menuUp, menuDown, destination, origin;
+    private bool paused = false;
 
     private void Awake()
     {
@@ -19,11 +20,14 @@ public class PauseMenu : MonoBehaviour
 
     public void PauseGame(bool pause)
     {
+        paused = pause;
         MoveMenu(pause ? menuUp : menuDown);
     }
 
     public void MoveMenu(Vector2 position, bool instant = false)
     {
+        StopAllCoroutines();
+
         if (instant)
         {
             menuPanel.position = position;
@@ -40,7 +44,7 @@ public class PauseMenu : MonoBehaviour
         bool atDest = false;
         float animTime = 0f;
 
-        while(!atDest)
+        while (!atDest)
         {
             animTime += Time.deltaTime;
             float eval = menuSpeed.Evaluate(animTime);
@@ -50,12 +54,35 @@ public class PauseMenu : MonoBehaviour
 
             float remainingDistance = Vector2.Distance(newPosition, destination);
 
-            if(remainingDistance < 1f)
+            if (remainingDistance < 1f)
             {
                 menuPanel.position = destination;
                 atDest = true;
             }
             yield return null;
+        }
+    }
+
+    public void SendPause()
+    {
+        GameSignals.PauseGame.Dispatch(!paused);
+    }
+
+    public void MainMenu()
+    {
+        UnityEngine.SceneManagement.SceneManager.LoadScene("Main Menu");
+    }
+
+    public void ExitGame()
+    {
+        Application.Quit();
+    }
+
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            SendPause();
         }
     }
 }

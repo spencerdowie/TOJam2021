@@ -99,14 +99,6 @@ public class LineViewCustom : DialogueViewBase
     [Min(0)]
     internal float typewriterEffectSpeed = 0f;
 
-#if USE_INPUTSYSTEM && ENABLE_INPUT_SYSTEM
-        [SerializeField]
-        internal InputActionReference continueActionReference = null;
-
-        [SerializeField]
-        internal InputAction continueAction = new InputAction("Skip", InputActionType.Button, CommonUsages.Cancel);
-#endif
-
     private InterruptionFlag interruptionFlag = new InterruptionFlag();
 
     [SerializeField]
@@ -167,13 +159,6 @@ public class LineViewCustom : DialogueViewBase
 
         StartCoroutine(WaitForSeconds(0.1f, () => runner.StartDialogue("Node")));
     }
-
-#if USE_INPUTSYSTEM && ENABLE_INPUT_SYSTEM
-        private void UserPerformedSkipAction(InputAction.CallbackContext obj)
-        {
-            OnContinueClicked();
-        }
-#endif
 
     public void Reset()
     {
@@ -314,10 +299,7 @@ public class LineViewCustom : DialogueViewBase
 
         GameSignals.typedSignal.AddListener(SignalCheck);
         //GameSignals.NodeTypeSignals[signalName].AddListener(SignalCheck);
-        while (!signal)
-        {
-            yield return null;
-        }
+        yield return new WaitUntil(() => signal);
 
         GameSignals.typedSignal.RemoveListener(SignalCheck);
         //GameSignals.NodeTypeSignals[signalName].RemoveListener(SignalCheck);
@@ -367,4 +349,6 @@ public class LineViewCustom : DialogueViewBase
             runner.StartDialogue(nextNode);
         }
     }
+
+
 }
