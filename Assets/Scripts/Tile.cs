@@ -33,7 +33,7 @@ public class Tile : MonoBehaviour, IPointerClickHandler
 
     public void OnPointerClick(PointerEventData e)
     {
-        if(interactable)
+        if(interactable && !paused)
             Board.Instance.SelectTile(this);
     }
 

@@ -155,6 +155,11 @@ public class Board : MonoBehaviour
         //StartCoroutine(Concurrent(() => Debug.Log("Concurrent End"), WaitForSeconds(5, "conc 5"), WaitForSeconds(5, "conc 5"), WaitForSeconds(5, "conc 5")));
     }
 
+    private void OnDestroy()
+    {
+        GameSignals.PauseGame.RemoveListener(SetTilesPaused);
+    }
+
     public void SetupBoard()
     {
         Tile[] allTiles = new Tile[(max.x + 1) * (max.y + 1)];

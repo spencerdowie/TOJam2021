@@ -18,6 +18,11 @@ public class PauseMenu : MonoBehaviour
         GameSignals.PauseGame.AddListener(PauseGame);
     }
 
+    private void OnDestroy()
+    {
+        GameSignals.PauseGame.RemoveListener(PauseGame);
+    }
+
     public void PauseGame(bool pause)
     {
         paused = pause;
