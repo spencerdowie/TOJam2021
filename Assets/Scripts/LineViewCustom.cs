@@ -108,6 +108,8 @@ public class LineViewCustom : DialogueViewBase
     private bool signal = false;
     private NodeType signalType = NodeType.NULL;
 
+    private bool paused = false;
+
     private List<Node> jokeNodes = new List<Node>(),
         lifestyleNodes = new List<Node>(),
         workNodes = new List<Node>(),
@@ -119,18 +121,8 @@ public class LineViewCustom : DialogueViewBase
 
     public void Start()
     {
-#if USE_INPUTSYSTEM && ENABLE_INPUT_SYSTEM
-            // If we are using an action reference, and it's not null,
-            // configure it
-            if (continueActionType == ContinueActionType.InputSystemActionFromAsset && continueActionReference != null)
-            {
-                continueActionReference.action.performed += UserPerformedSkipAction;
-            }
+        GameSignals.PauseGame.AddListener(Pause);
 
-            // The custom skip action always starts disabled
-            continueAction?.Disable();
-            continueAction.performed += UserPerformedSkipAction;
-#endif
         runner = FindObjectOfType<DialogueRunner>();
         List<Node> nodes = new List<Node>(runner.yarnProject.GetProgram().Nodes.Values);
         //runner.onNodeComplete.AddListener(NodeComplete);
@@ -163,6 +155,11 @@ public class LineViewCustom : DialogueViewBase
     public void Reset()
     {
         canvasGroup = GetComponentInParent<CanvasGroup>();
+    }
+
+    private void OnDestroy()
+    {
+        GameSignals.PauseGame.RemoveListener(Pause);
     }
 
     public override void OnLineStatusChanged(LocalizedLine dialogueLine)
@@ -248,7 +245,7 @@ public class LineViewCustom : DialogueViewBase
             if (useTypewriterEffect)
             {
                 // Start the typewriter
-                StartCoroutine(Effects.Typewriter(lineText, typewriterEffectSpeed, onDialogueLineFinished, interruptionFlag));
+                StartCoroutine(Typewriter(lineText, typewriterEffectSpeed, onDialogueLineFinished, interruptionFlag));
             }
             else
             {
@@ -261,7 +258,7 @@ public class LineViewCustom : DialogueViewBase
     {
         if (useTypewriterEffect)
         {
-            StartCoroutine(Effects.Typewriter(lineText, typewriterEffectSpeed, onDialogueLineFinished, interruptionFlag));
+            StartCoroutine(Typewriter(lineText, typewriterEffectSpeed, onDialogueLineFinished, interruptionFlag));
         }
         else
         {
@@ -350,5 +347,70 @@ public class LineViewCustom : DialogueViewBase
         }
     }
 
+    public IEnumerator Typewriter(TextMeshProUGUI text, float lettersPerSecond, Action onComplete = null, InterruptionFlag interruption = null)
+    {
 
+        // Start with everything invisible
+        text.maxVisibleCharacters = 0;
+
+        // Wait a single frame to let the text component process its
+        // content, otherwise text.textInfo.characterCount won't be
+        // accurate
+        yield return null;
+
+        // How many visible characters are present in the text?
+        var characterCount = text.textInfo.characterCount;
+
+        // Early out if letter speed is zero or text length is zero
+        if (lettersPerSecond <= 0 || characterCount == 0)
+        {
+            // Show everything and invoke the completion handler
+            text.maxVisibleCharacters = characterCount;
+            onComplete?.Invoke();
+            yield break;
+        }
+
+        // Convert 'letters per second' into its inverse
+        float secondsPerLetter = 1.0f / lettersPerSecond;
+
+        // If lettersPerSecond is larger than the average framerate, we
+        // need to show more than one letter per frame, so simply
+        // adding 1 letter every secondsPerLetter won't be good enough
+        // (we'd cap out at 1 letter per frame, which could be slower
+        // than the user requested.)
+        //
+        // Instead, we'll accumulate time every frame, and display as
+        // many letters in that frame as we need to in order to achieve
+        // the requested speed.
+        var accumulator = Time.deltaTime;
+
+        while (text.maxVisibleCharacters < characterCount && interruption?.Interrupted == false)
+        {
+            if (!paused)
+            {
+                // We need to show as many letters as we have accumulated
+                // time for.
+                while (accumulator >= secondsPerLetter)
+                {
+                    text.maxVisibleCharacters += 1;
+                    accumulator -= secondsPerLetter;
+                }
+                accumulator += Time.deltaTime;
+            }
+            yield return null;
+
+        }
+
+        // We either finished displaying everything, or were
+        // interrupted. Either way, display everything now.
+        text.maxVisibleCharacters = characterCount;
+
+        // Wrap up by invoking our completion handler.
+        onComplete?.Invoke();
+    }
+
+    private void Pause(bool pause)
+    {
+        paused = pause;
+    }
 }
