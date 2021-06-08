@@ -149,10 +149,10 @@ public class Board : MonoBehaviour
         }
         SetupBoard();
         GameSignals.PauseGame.AddListener(SetTilesPaused);
-        Debug.Log("SequenceStart");
-        StartCoroutine(Sequence(() => Debug.Log("Sequence End"), WaitForSeconds(5, "seq 5"), WaitForSeconds(5, "seq 10"), WaitForSeconds(5, "seq 15")));
-        Debug.Log("ConcurrentStart");
-        StartCoroutine(Concurrent(() => Debug.Log("Concurrent End"), WaitForSeconds(5, "conc 5"), WaitForSeconds(5, "conc 5"), WaitForSeconds(5, "conc 5")));
+        //Debug.Log("SequenceStart");
+        //StartCoroutine(Sequence(() => Debug.Log("Sequence End"), WaitForSeconds(5, "seq 5"), WaitForSeconds(5, "seq 10"), WaitForSeconds(5, "seq 15")));
+        //Debug.Log("ConcurrentStart");
+        //StartCoroutine(Concurrent(() => Debug.Log("Concurrent End"), WaitForSeconds(5, "conc 5"), WaitForSeconds(5, "conc 5"), WaitForSeconds(5, "conc 5")));
     }
 
     public void SetupBoard()
